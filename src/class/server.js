@@ -1,8 +1,8 @@
-const express = require("express");
-const usersRoutes = require("../Routes/users/usersRoutes");
-const utilsRoutes = require("../Routes/utils/utilsRoutes");
+import express from "express";
+import usersRoutes from "../Routes/users/users.routes.js";
+import utilsRoutes from "../Routes/utils/utils.routes.js";
 
-class Server{
+export default class Server{
     constructor( port ){
         //Initializace values of server
         this.app = express();
@@ -31,5 +31,3 @@ class Server{
         });
     }
 }
-
-module.exports = Server;
