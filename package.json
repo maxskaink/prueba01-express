@@ -1,0 +1,25 @@
+{
+  "name": "back-express",
+  "version": "1.0.0",
+  "description": "Es solo el backend de un proyecto de prueba",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxskaink/prueba01-express.git"
+  },
+  "author": "max",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maxskaink/prueba01-express/issues"
+  },
+  "homepage": "https://github.com/maxskaink/prueba01-express#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
