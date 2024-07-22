@@ -1,11 +1,12 @@
-import { response } from "express";
+import { response, request } from "express";
 import pool from "../db/conection.js";
+import { sha256 } from "../utils/encrypt.js";
 import { runInternalError,
          runNotUserFound,
          runInvalidFormat
  } from "./error.controllers.js";
 
-export const getUsers = async (req, res) => {
+export const getUsers = async (req = request, res= response) => {
 
   const numberPage = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 10;
@@ -25,7 +26,7 @@ export const getUsers = async (req, res) => {
       numberOfUsers: response.rowCount,
       page: numberPage,
       pageSize: pageSize,
-      users: response.rows
+      users: response.rows.map( user => {delete user.password; return user;})
     }))
     .catch(() => runInternalError(req, res));
 };
@@ -40,7 +41,32 @@ export const getUserById = async (req, res) => {
     .then((response) => {
       if (response.rowCount === 0)
         runNotUserFound(req,res);
-      else res.json(response.rows[0]);
+      else{
+        delete response.rows[0].password;
+        res.json(response.rows[0])
+      };
     })
     .catch(() => runInternalError(req, res));
+};
+
+export const createUser = async (req = request, res = response) =>{
+  
+  //Its all ready validated in the middleware
+  const { name, email, password } = req.body;
+
+  const passwordHash = await sha256(password)
+    .catch(() => runInternalError(req, res));
+  
+  const result = await pool
+    .query("INSERT INTO users(name, email, password) VALUES($1, $2, $3) RETURNING *", [name, email, passwordHash])
+    .catch((err) => runInternalError(req, res, err.detail));
+  
+  if(undefined === result) return;
+
+  if(result.rowCount === 0)
+    return runInternalError(req, res, "User not created, please try again");
+
+  delete result.rows[0].password;
+
+  res.status(200).json(result.rows[0]);
 };
