@@ -19,3 +19,7 @@ export const runMissingFields = (req, res, extraInfo) =>{
 export const runUnauthorized = (req, res, extraInfo) =>{
     res.status(401).json(new Message("Unauthorized", extraInfo));
 }
+
+export const runNotImplemented = (req, res, extraInfo) =>{
+    res.status(501).json(new Message("Not Implemented", extraInfo));
+}

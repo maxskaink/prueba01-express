@@ -4,7 +4,8 @@ import { sha256, makeJWT, verifyJWT } from "../utils/encrypt.js";
 import { runInternalError,
          runNotUserFound,
          runInvalidFormat,
-         runUnauthorized
+         runUnauthorized,
+         runNotImplemented
  } from "./error.controllers.js";
 
 export const getUsers = async (req = request, res= response) => {
@@ -159,4 +160,13 @@ export const patchUser = async (req=request, res=response) => {
     .query("SELECT id, name, email FROM users WHERE id = $1", [user.id])
     .catch(() => runInternalError(req, res));
   return res.json(result.rows[0]);
+};
+
+export const deleteUser = async (req=request, res=response) => {
+  const {jwt} = req.headers;
+  const user = await verifyJWT(jwt)
+    .catch(() => runUnauthorized(req, res, "Invalid JWT"));
+  if(undefined == user) return;
+
+  return runNotImplemented(req, res, "This feature is not implemented, may be another day");
 };
