@@ -122,3 +122,41 @@ export const updateUser = async (req=request, res=response) => {
 
   res.json(result.rows[0]);
 };
+
+export const patchUser = async (req=request, res=response) => {
+  const {jwt} = req.headers;
+  const {name, email, password} = req.body;
+
+  const user = await verifyJWT(jwt)
+    .catch(() => runUnauthorized(req, res, "Invalid JWT"));
+  if(undefined == user) return;
+  
+  if(password){
+    const passwordHash = await sha256(password)
+      .catch(() => runInternalError(req, res));
+    if(undefined === passwordHash) return;
+
+    const result = await pool
+      .query("UPDATE users SET password = $1 WHERE id = $2 RETURNING id, name, email", [passwordHash, user.id])
+      .catch(() => runInternalError(req, res, "User not updated, pleadese verify the data or try again"));
+    if(undefined === result) return;
+  }
+
+  if(name){
+    const result = await pool
+      .query("UPDATE users SET name = $1 WHERE id = $2 RETURNING id, name, email", [name, user.id])
+      .catch(() => runInternalError(req, res, "User not updated, pleadese verify the data or try again"));
+    if(undefined === result) return;
+  }
+  if(email){
+    const result = await pool
+      .query("UPDATE users SET email = $1 WHERE id = $2 RETURNING id, name, email", [email, user.id])
+      .catch(() => runInternalError(req, res, "User not updated, pleadese verify the data or try again"));
+    if(undefined === result) return;
+  }
+
+  const result = await pool
+    .query("SELECT id, name, email FROM users WHERE id = $1", [user.id])
+    .catch(() => runInternalError(req, res));
+  return res.json(result.rows[0]);
+};
