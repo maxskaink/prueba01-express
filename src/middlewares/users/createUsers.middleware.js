@@ -1,5 +1,5 @@
-import { isEmail  } from "../utils/validations.js";
-import { runInvalidFormat, runMissingFields } from "../controllers/error.controllers.js";
+import { isEmail  } from "../../utils/validations.js";
+import { runInvalidFormat, runMissingFields } from "../../controllers/error.controllers.js";
 import { response, request } from "express";
 
 export const createUsersMiddleware = async (req = request, res = response, next) => {

@@ -1,5 +1,5 @@
-import { runMissingFields, runInvalidFormat } from "../controllers/error.controllers.js"
-import { isEmail } from "../utils/validations.js";
+import { runMissingFields, runInvalidFormat } from "../../controllers/error.controllers.js"
+import { isEmail } from "../../utils/validations.js";
 
 export const loginUserMiddleware = (req, res, next) => {
     const { email, password } = req.body;

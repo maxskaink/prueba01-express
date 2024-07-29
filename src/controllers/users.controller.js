@@ -1,6 +1,6 @@
 import { response, request } from "express";
 import pool from "../db/conection.js";
-import { sha256, makeJWT } from "../utils/encrypt.js";
+import { sha256, makeJWT, verifyJWT } from "../utils/encrypt.js";
 import { runInternalError,
          runNotUserFound,
          runInvalidFormat,
@@ -98,4 +98,27 @@ export const loginUser = async (req=request, res=response) => {
   };
 
   res.status(200).json(response);
+};
+
+export const updateUser = async (req=request, res=response) => {
+  const {jwt} = req.headers;
+  const {name, email, password} = req.body;
+
+  const user = await verifyJWT(jwt)
+    .catch(() => runUnauthorized(req, res, "Invalid JWT"));
+  if(undefined == user) return;
+  
+  const passwordHash = await sha256(password)
+    .catch(() => runInternalError(req, res));
+  if(undefined === passwordHash) return;
+
+  const result = await pool
+    .query("UPDATE users SET name = $1, email = $2, password = $3 WHERE id = $4 RETURNING id, name, email", [name, email, passwordHash, user.id])
+    .catch(() => runInternalError(req, res, "User not updated, pleadese verify the data or try again"));
+  if(undefined === result) return;
+
+  if(result.rowCount == 0 )
+    return runInternalError(req, res, "User not updated, please try again");
+
+  res.json(result.rows[0]);
 };
