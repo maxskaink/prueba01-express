@@ -21,6 +21,7 @@
   "homepage": "https://github.com/maxskaink/prueba01-express#readme",
   "dependencies": {
     "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "pg": "^8.12.0"
   }

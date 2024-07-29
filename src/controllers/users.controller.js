@@ -1,9 +1,10 @@
 import { response, request } from "express";
 import pool from "../db/conection.js";
-import { sha256 } from "../utils/encrypt.js";
+import { sha256, makeJWT } from "../utils/encrypt.js";
 import { runInternalError,
          runNotUserFound,
-         runInvalidFormat
+         runInvalidFormat,
+         runUnauthorized
  } from "./error.controllers.js";
 
 export const getUsers = async (req = request, res= response) => {
@@ -69,4 +70,32 @@ export const createUser = async (req = request, res = response) =>{
   delete result.rows[0].password;
 
   res.status(200).json(result.rows[0]);
+};
+
+export const loginUser = async (req=request, res=response) => {
+  const { email, password } = req.body;
+  
+  const passwordHash = await sha256(password)
+    .catch(() => runInternalError(req, res));
+  
+  if(undefined === passwordHash) return;
+
+  const result = await pool
+    .query("SELECT id, name, email FROM users WHERE email = $1 AND password = $2", [email, passwordHash])
+    .catch(() => runInternalError(req, res));
+
+  if(undefined === result) return;
+
+  if(result.rowCount === 0)
+    return runUnauthorized(req, res, "The password or email are incorrect");
+
+  const JWT = await makeJWT(result.rows[0])
+    .catch(() => runInternalError(req, res, "Error creating JWT"));
+  if(undefined === JWT) return;
+  const response = {
+    message: "User logged",
+    JWT
+  };
+
+  res.status(200).json(response);
 };

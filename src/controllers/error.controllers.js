@@ -15,3 +15,7 @@ export const runInvalidFormat = (req, res, extraInfo) =>{
 export const runMissingFields = (req, res, extraInfo) =>{
     res.status(400).json(new Message("Missing fields", extraInfo));
 }
+
+export const runUnauthorized = (req, res, extraInfo) =>{
+    res.status(401).json(new Message("Unauthorized", extraInfo));
+}
