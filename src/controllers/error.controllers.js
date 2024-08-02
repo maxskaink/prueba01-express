@@ -23,3 +23,7 @@ export const runUnauthorized = (req, res, extraInfo) =>{
 export const runNotImplemented = (req, res, extraInfo) =>{
     res.status(501).json(new Message("Not Implemented", extraInfo));
 }
+
+export const runNotFound = (req, res, extraInfo) =>{
+    res.status(404).json(new Message("Not Found", extraInfo));
+};
