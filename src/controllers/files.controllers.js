@@ -3,6 +3,7 @@ import { runInternalError,
          runNotFound, 
          runUnauthorized } from "./error.controllers.js"
 import pool from "../db/conection.js";
+import fs from "fs";
 
 export const getFiles = async (req=request, res = response) => {
     const { id } = req.user;
@@ -53,4 +54,28 @@ export const postFile = async (req = request, res = response) => {
 
     const file = response.rows[0];
     res.json({ ...file });
+};
+
+export const deleteFile = async (req= request, res = response ) => {
+    const { idFile } = req.params;
+    const { id: idUserLoged } = req.user;
+    
+    const file = await pool
+        .query("SELECT * FROM files WHERE id = $1", [idFile])
+        .catch( e => runInternalError(req, res, e));
+    if(!file) return;
+
+    if(file.rowCount == 0)
+        return runNotFound(req, res, `File with id ${idFile} not found`);
+
+    if(file.rows[0].user_id != idUserLoged)
+        return runUnauthorized(req, res, "You are not authorized to delete this file");
+
+    await fs.unlink(file.rows[0].path, async (err) => {
+        if(err) return runInternalError(req, res, err);
+
+        await pool.query("DELETE FROM files WHERE id = $1", [idFile])
+            .catch(e => runInternalError(req, res, e))
+            .then( () => res.json(file.rows[0]));
+    });
 };
